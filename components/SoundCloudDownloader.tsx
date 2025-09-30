@@ -23,6 +23,7 @@ import { SearchTabContent } from "./SearchTabContent";
 import { SingleTrackTabContent } from "./SingleTrackTabContent";
 import { PlaylistTabContent } from "./PlaylistTabContent";
 import { getClientIdApiPath, getDownloadApiPath } from "@/lib/get-api-endpoint";
+import AdBanner from "./AdBanner";
 
 export interface SearchResultItem {
   id: string;
@@ -412,6 +413,8 @@ export function SoundCloudDownloader() {
           </CardContent>
         </Card>
       </div>
+
+      <AdBanner />
 
       {/* Error State */}
       {error && (
