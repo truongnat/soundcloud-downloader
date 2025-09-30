@@ -130,7 +130,7 @@ export function SoundCloudDownloader() {
         }
       }
 
-      const blob = new Blob(chunks, { type: 'audio/mpeg' });
+      const blob = new Blob(chunks as any, { type: 'audio/mpeg' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
