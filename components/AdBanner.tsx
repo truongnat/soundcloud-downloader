@@ -1,6 +1,10 @@
 import React from 'react';
 
-const AdBanner = () => {
+interface AdBannerProps {
+  children?: React.ReactNode;
+}
+
+const AdBanner: React.FC<AdBannerProps> = () => {
   return (
     <div className="my-4 flex justify-center">
       <div className="w-full max-w-4xl">
