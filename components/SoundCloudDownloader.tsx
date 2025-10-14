@@ -100,10 +100,43 @@ export function SoundCloudDownloader() {
 
     toast.info(`Bắt đầu tải "${item.title}"`);
     try {
-      const finalUrl = item.url.includes('?') ? `${item.url}&client_id=${clientId}` : `${item.url}?client_id=${clientId}`;
+      const finalUrl = item.url.includes("?")
+        ? `${item.url}&client_id=${clientId}`
+        : `${item.url}?client_id=${clientId}`;
 
-      const response = await fetch(getDownloadApiPath(finalUrl, item.title, clientId));
-      
+      const response = await fetch(
+        getDownloadApiPath(finalUrl, item.title, clientId)
+      );
+
+      // Ensure we received a successful response
+      if (!response.ok) {
+        // Try to parse JSON error message if any
+        let errMsg = `HTTP ${response.status} ${response.statusText}`;
+        try {
+          const json = await response.json();
+          if (json && json.error) errMsg = json.error;
+        } catch (e) {
+          // ignore parse errors
+        }
+        throw new Error(errMsg);
+      }
+
+      // Validate content-type to avoid saving JSON/html error responses as .mp3 files
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("audio") && !contentType.includes("application/octet-stream")) {
+        // attempt to read text/json body for better error message
+        let bodyText = "";
+        try {
+          bodyText = await response.text();
+          const maybeJson = JSON.parse(bodyText || "null");
+          if (maybeJson && maybeJson.error) throw new Error(maybeJson.error);
+        } catch (e) {
+          // not JSON — include short body snippet
+          const snippet = bodyText.substring(0, 200);
+          throw new Error(`Unexpected content-type: ${contentType}. Body: ${snippet}`);
+        }
+      }
+
       if (!response.body) {
         throw new Error("Không có nội dung để tải");
       }
@@ -134,11 +167,16 @@ export function SoundCloudDownloader() {
       const blob = new Blob(chunks as any, { type: 'audio/mpeg' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
+      // Assign a unique id to avoid collisions when multiple downloads occur
+      const uniqueId = `download-${item.id}-${Date.now()}`;
+      a.id = uniqueId;
       a.href = url;
       a.download = `${item.title}.mp3`;
       document.body.appendChild(a);
       a.click();
-      a.remove();
+      // Clean up: remove the anchor by id in case some browsers keep references
+      const el = document.getElementById(uniqueId);
+      if (el && el.parentElement) el.parentElement.removeChild(el);
       window.URL.revokeObjectURL(url);
 
       setDownloadProgress((prev) =>
