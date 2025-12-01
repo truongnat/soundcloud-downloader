@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClientIdProvider } from "@/contexts/ClientIdProvider";
-import { ThemeProvider } from "next-themes";
-import { ScrollToTopButton } from "@/components/ScrollToTopButton";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ScrollToTopButton, ModeToggle } from "@/components/common";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,16 +49,24 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-       <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-       <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-       <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1650067341320347"
-     crossOrigin="anonymous"></script>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1650067341320347"
+          crossOrigin="anonymous"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientIdProvider>
-          <ThemeProvider attribute="class">
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className="fixed top-4 right-4 z-50">
+              <ModeToggle />
+            </div>
             {children}
             <ScrollToTopButton />
           </ThemeProvider>

@@ -7,12 +7,14 @@ export const buildApiEndpoint = (path: string) => {
 export const getSearchApiPath = (
   query: string,
   clientId: string,
-  limit?: number
+  offset: number = 0,
+  limit: number = 10
 ) => {
-  let path = `/api/soundcloud/search?q=${encodeURIComponent(query)}&limit=${
-    limit || 10
-  }&client_id=${clientId}`;
-  return buildApiEndpoint(path);
+  return buildApiEndpoint(
+    `/api/soundcloud/search?q=${encodeURIComponent(
+      query
+    )}&limit=${limit}&offset=${offset}&client_id=${clientId}`
+  );
 };
 
 export const getClientIdApiPath = () => {
