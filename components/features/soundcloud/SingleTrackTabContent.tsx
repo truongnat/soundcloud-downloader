@@ -24,13 +24,17 @@ export function SingleTrackTabContent({
   isAnyLoading,
 }: SingleTrackTabContentProps) {
   const { setQueryParam, getQueryParam } = useUrlState();
-  const [url, setUrl] = useState(() => getQueryParam("url") || "");
+  const [url, setUrl] = useState(() => getQueryParam("sc_track_url") || "");
+
+  // Sync URL state to query param
+  React.useEffect(() => {
+    setQueryParam("sc_track_url", url);
+  }, [url, setQueryParam]);
 
   // Auto-load when there's a URL in the query params
   React.useEffect(() => {
-    const urlFromQuery = getQueryParam("url");
-    if (urlFromQuery && !url) {
-      setUrl(urlFromQuery);
+    const urlFromQuery = getQueryParam("sc_track_url");
+    if (urlFromQuery) {
       handleUrlSubmit(urlFromQuery);
     }
   }, []);
@@ -43,7 +47,7 @@ export function SingleTrackTabContent({
     }
 
     setIsLoading(true);
-    setQueryParam("url", urlToUse);
+    // setQueryParam("url", urlToUse); // Removed old param setting
     setError(null);
 
     try {

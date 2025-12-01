@@ -38,13 +38,36 @@ interface DownloadProgress {
     status: "waiting" | "downloading" | "completed" | "error";
 }
 
+import { useUrlState } from "@/lib/use-url-state";
+
 export function YouTubeDownloader() {
-    const [url, setUrl] = useState("");
+    const { setQueryParam, getQueryParam } = useUrlState();
+    const [url, setUrl] = useState(() => getQueryParam("yt_url") || "");
     const [items, setItems] = useState<YouTubeItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [downloadProgress, setDownloadProgress] = useState<DownloadProgress[]>([]);
     const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+
+    // Sync URL state to query param
+    useEffect(() => {
+        setQueryParam("yt_url", url);
+    }, [url, setQueryParam]);
+
+    // Auto-fetch if URL is present on mount (and not already fetched)
+    useEffect(() => {
+        const initialUrl = getQueryParam("yt_url");
+        if (initialUrl && items.length === 0 && !isLoading) {
+            // We need to call handleFetchInfo, but it depends on state. 
+            // Ideally we should extract the fetch logic or just trigger it.
+            // Since handleFetchInfo uses the 'url' state which is initialized, we can just call it.
+            // However, we need to be careful about dependency cycles.
+            // Let's just set the URL and let the user click or trigger it? 
+            // User asked "reload lại vẫn còn các trạng thái", implying results too?
+            // Re-fetching automatically is a good start.
+            handleFetchInfo();
+        }
+    }, []); // Run once on mount
 
     const handleFetchInfo = async () => {
         if (!url) {

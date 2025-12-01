@@ -24,13 +24,23 @@ export function PlaylistTabContent({
   isAnyLoading,
 }: PlaylistTabContentProps) {
   const { setQueryParam, getQueryParam } = useUrlState();
-  const [url, setUrl] = useState(() => getQueryParam("url") || "");
+  const [url, setUrl] = useState(() => getQueryParam("sc_playlist_url") || "");
+
+  // Sync URL state to query param
+  React.useEffect(() => {
+    setQueryParam("sc_playlist_url", url);
+  }, [url, setQueryParam]);
 
   // Auto-load when there's a URL in the query params
   React.useEffect(() => {
-    const urlFromQuery = getQueryParam("url");
-    if (urlFromQuery && !url) {
-      setUrl(urlFromQuery);
+    const urlFromQuery = getQueryParam("sc_playlist_url");
+    if (urlFromQuery) {
+      // If we have a URL, we might want to trigger the fetch automatically
+      // But we need to be careful not to trigger it if it's just being typed
+      // For now, let's just ensure the input is populated (handled by useState)
+      // and maybe trigger if it's the initial load?
+      // The original code had logic to call handleUrlSubmit.
+      // Let's keep it but use the new param name.
       handleUrlSubmit(urlFromQuery);
     }
   }, []);
@@ -43,7 +53,7 @@ export function PlaylistTabContent({
     }
 
     setIsLoading(true);
-    setQueryParam("url", urlToUse);
+    // setQueryParam("url", urlToUse); // Removed old param setting
     setError(null);
 
     try {
