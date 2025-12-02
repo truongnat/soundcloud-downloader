@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getDictionary } from "../get-dictionary";
 import HomeClient from "./HomeClient";
 
@@ -5,5 +6,9 @@ export default async function Page({ params }: { params: Promise<{ lang: "en" | 
   const { lang } = await params;
   const dict = await getDictionary(lang);
 
-  return <HomeClient dict={dict} />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <HomeClient dict={dict} />
+    </Suspense>
+  );
 }

@@ -16,7 +16,7 @@ const LOCALES: Locale[] = ["en", "vi", "zh", "ko", "ja"];
 const BASE_URL = "https://soundcloud-downloader-pro.vercel.app";
 
 type Props = {
-  params: Promise<{ lang: Locale }>;
+  params: Promise<{ lang: string }>;
 };
 
 // --- Fonts ---
@@ -33,7 +33,8 @@ const geistMono = Geist_Mono({
 // --- Metadata ---
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang } = await params;
-  const dict = await getDictionary(lang);
+  const locale = lang as Locale;
+  const dict = await getDictionary(locale);
 
   return {
     title: dict.hero.title,
@@ -43,9 +44,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: dict.hero.title,
       description: dict.hero.description,
-      url: `/${lang}`,
+      url: `/${locale}`,
       type: "website",
-      locale: lang,
+      locale: locale,
       siteName: "Universal Music Downloader",
       images: [
         {
@@ -63,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: ["/og-image.png"],
     },
     alternates: {
-      canonical: `/${lang}`,
+      canonical: `/${locale}`,
       languages: {
         en: "/en",
         vi: "/vi",
@@ -122,15 +123,16 @@ export default async function RootLayout({
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ lang: Locale }>;
+  params: Promise<{ lang: string }>;
 }>) {
   const { lang } = await params;
+  const locale = lang as Locale;
 
   // Parallel Data Fetching (Dictionary is already cached, ClientID is new)
   const initialClientId = await fetchClientId();
 
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {/* Optimized Script Loading */}
         <Script
