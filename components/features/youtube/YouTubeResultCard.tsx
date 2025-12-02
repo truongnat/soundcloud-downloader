@@ -1,0 +1,78 @@
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+    Download,
+    DownloadCloud,
+    Youtube,
+    Clock,
+} from "lucide-react";
+import { YouTubeItem, DownloadProgress } from "./types";
+
+interface YouTubeResultCardProps {
+    item: YouTubeItem;
+    progress?: DownloadProgress;
+    onDownload: (item: YouTubeItem) => void;
+    isDownloadingAll?: boolean;
+}
+
+export const YouTubeResultCard = React.memo(({ item, progress, onDownload, isDownloadingAll }: YouTubeResultCardProps) => {
+    const isDownloading = progress?.status === "downloading";
+    const isCompleted = progress?.status === "completed";
+
+    const formatDuration = (seconds?: number) => {
+        if (!seconds) return "";
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        return `${min}:${sec.toString().padStart(2, '0')}`;
+    };
+
+    return (
+        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+            <div className="w-24 h-16 bg-muted rounded overflow-hidden flex-shrink-0">
+                {item.thumbnail ? (
+                    <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Youtube className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                )}
+            </div>
+            <div className="flex-1 min-w-0">
+                <h4 className="font-medium truncate" title={item.title}>{item.title}</h4>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{item.uploader}</span>
+                    {item.duration && (
+                        <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDuration(item.duration)}</span>
+                        </>
+                    )}
+                </div>
+                {progress && (
+                    <div className="mt-2">
+                        <Progress value={progress.progress} className="h-1" />
+                        <p className="text-xs text-muted-foreground mt-1 text-right">{progress.progress}%</p>
+                    </div>
+                )}
+            </div>
+            <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => onDownload(item)}
+                disabled={isDownloading || isDownloadingAll}
+            >
+                {isCompleted ? (
+                    <DownloadCloud className="w-5 h-5 text-green-500" />
+                ) : isDownloading ? (
+                    <Download className="w-5 h-5 animate-pulse" />
+                ) : (
+                    <Download className="w-5 h-5" />
+                )}
+            </Button>
+        </div>
+    );
+});
+
+YouTubeResultCard.displayName = "YouTubeResultCard";

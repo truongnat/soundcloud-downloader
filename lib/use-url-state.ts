@@ -16,13 +16,17 @@ export function useUrlState() {
   }, [router, searchParams]);
 
   const setOnlyQueryParams = useCallback((entries: Record<string, string | null | undefined>) => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
     Object.entries(entries).forEach(([k, v]) => {
-      if (v) params.set(k, v);
+      if (v) {
+        params.set(k, v);
+      } else {
+        params.delete(k);
+      }
     });
     const qs = params.toString();
     router.push(qs ? `?${qs}` : "?");
-  }, [router]);
+  }, [router, searchParams]);
 
   const getQueryParam = useCallback((key: string) => {
     return searchParams.get(key);

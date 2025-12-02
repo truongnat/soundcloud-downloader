@@ -21,24 +21,14 @@ import {
 import { SearchTabContent } from "./SearchTabContent";
 import { SingleTrackTabContent } from "./SingleTrackTabContent";
 import { PlaylistTabContent } from "./PlaylistTabContent";
-import { VirtualizedSearchResults } from "./VirtualizedSearchResults";
+
 import { getDownloadApiPath } from "@/lib/get-api-endpoint";
+import { SearchResultCard } from "./SearchResultCard";
+import { SearchResultItem, DownloadProgress } from "./types";
 
-export interface SearchResultItem {
-  id: string;
-  kind: "track" | "user" | "playlist";
-  title: string;
-  artist?: string;
-  duration?: string;
-  thumbnail: string;
-  url: string;
-}
 
-interface DownloadProgress {
-  trackId: string;
-  progress: number;
-  status: "waiting" | "downloading" | "completed" | "error";
-}
+
+
 
 import { useClientId } from "@/contexts/ClientIdProvider";
 import { useUrlState } from "@/lib/use-url-state";
@@ -47,7 +37,14 @@ import pLimit from "p-limit";
 import { AdBanner } from "@/components/common/AdBanner";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 
-const limit = pLimit(5);
+const getConcurrencyLimit = () => {
+  if (typeof navigator !== "undefined" && navigator.hardwareConcurrency) {
+    return Math.max(1, navigator.hardwareConcurrency - 1);
+  }
+  return 5; // Default fallback
+};
+
+const limit = pLimit(getConcurrencyLimit());
 
 export function SoundCloudDownloader() {
   const { setQueryParam, setOnlyQueryParams, getQueryParam } = useUrlState();
@@ -256,129 +253,7 @@ export function SoundCloudDownloader() {
     return downloadProgress.find((p) => p.trackId === trackId);
   }, [downloadProgress]);
 
-  const SearchResultCard = React.memo(({ item, index }: { item: SearchResultItem; index: number }) => {
-    const progress = getProgressForTrack(item.id);
-    const isDownloading = progress?.status === "downloading";
-    const isCompleted = progress?.status === "completed";
 
-    const isTrack = item.kind === "track";
-    const isUser = item.kind === "user";
-    const isPlaylist = item.kind === "playlist";
-
-    const Icon = isTrack ? Music : isUser ? User : ListMusic;
-    const title = item.title;
-    const subtitle = isTrack ? item.artist : isUser ? "Người dùng" : "Playlist";
-    const duration = isTrack ? item.duration : undefined;
-
-    return (
-      <div>
-        <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-6">
-              <div
-                className="w-full sm:w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden"
-              >
-                {item.thumbnail ? (
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = "none";
-                      target.parentElement!.innerHTML =
-                        '<Icon className="w-8 h-8 text-muted-foreground" />';
-                    }}
-                  />
-                ) : (
-                  <Icon className="w-8 h-8 text-muted-foreground" />
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <h3
-                  className="text-xl font-semibold truncate mb-4"
-                >
-                  {index + 1}. {title}
-                </h3>
-                <div
-                  className="flex items-center gap-3 text-muted-foreground"
-                >
-                  {isUser ? <User className="w-4 h-4" /> : isPlaylist ? <ListMusic className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                  <span className="truncate">{subtitle}</span>
-                </div>
-                {duration && (
-                  <div
-                    className="flex items-center gap-3 mt-2 text-muted-foreground"
-                  >
-                    <Clock className="w-4 h-4" />
-                    <span>{duration}</span>
-                  </div>
-                )}
-
-                {progress && isTrack && (
-                  <div
-                    className="mt-3"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-muted-foreground">
-                        {isCompleted ? "Hoàn thành" : "Đang tải..."}
-                      </span>
-                      <span
-                        className="text-sm"
-                      >
-                        {progress.progress}%
-                      </span>
-                    </div>
-                    <Progress value={progress.progress} className="h-2" />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col gap-3 justify-center">
-                {isTrack && (
-                  <div>
-                    <Button
-                      onClick={() => handleDownloadSingle(item)}
-                      disabled={isDownloading || isAnyLoading}
-                      className="whitespace-nowrap transition-all duration-200 w-full"
-                    >
-                      {isCompleted ? (
-                        <>
-                          <DownloadCloud className="w-4 h-4 mr-2" />
-                          Đã tải
-                        </>
-                      ) : isDownloading ? (
-                        <>
-                          <Download className="w-4 h-4 mr-2 animate-pulse" />
-                          Đang tải...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          Tải về
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-                <div>
-                  <Button
-                    onClick={() => window.open(item.url, "_blank")}
-                    variant="outline"
-                    className="whitespace-nowrap transition-all duration-200 w-full"
-                  >
-                    <PlayCircle className="w-4 h-4 mr-2" />
-                    Mở trên SC
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  });
 
   return (
     <div
@@ -455,27 +330,7 @@ export function SoundCloudDownloader() {
                 />
               </div>
 
-              <TabsContent value="single" className="space-y-4">
-                <SingleTrackTabContent
-                  setTracks={setTracks}
-                  setIsLoading={setIsLoading}
-                  setError={setError}
-                  isLoading={isLoading}
-                  isAnyLoading={isAnyLoading}
-                />
-              </TabsContent>
-
-              <TabsContent value="playlist" className="space-y-4">
-                <PlaylistTabContent
-                  setTracks={setTracks}
-                  setIsLoading={setIsLoading}
-                  setError={setError}
-                  isLoading={isLoading}
-                  isAnyLoading={isAnyLoading}
-                />
-              </TabsContent>
-
-              <TabsContent value="search" className="space-y-4">
+              <TabsContent value="search" className="mt-0">
                 <SearchTabContent
                   setTracks={setTracks}
                   setIsLoading={setIsLoading}
@@ -487,6 +342,27 @@ export function SoundCloudDownloader() {
                   onStateChange={setSearchState}
                   page={page}
                   onLoadMore={() => setPage(p => p + 1)}
+                  clientId={clientId}
+                />
+              </TabsContent>
+              <TabsContent value="single" className="mt-0">
+                <SingleTrackTabContent
+                  setTracks={setTracks}
+                  setIsLoading={setIsLoading}
+                  setError={setError}
+                  isLoading={isLoading}
+                  isAnyLoading={isAnyLoading}
+                  clientId={clientId}
+                />
+              </TabsContent>
+              <TabsContent value="playlist" className="mt-0">
+                <PlaylistTabContent
+                  setTracks={setTracks}
+                  setIsLoading={setIsLoading}
+                  setError={setError}
+                  isLoading={isLoading}
+                  isAnyLoading={isAnyLoading}
+                  clientId={clientId}
                 />
               </TabsContent>
             </Tabs>
@@ -496,7 +372,7 @@ export function SoundCloudDownloader() {
 
       <AdBanner />
 
-      {isLoading && (
+      {isLoading && tracks.length === 0 && (
         <div>
           <Card>
             <CardContent className="py-10 flex items-center justify-center">
@@ -581,7 +457,7 @@ export function SoundCloudDownloader() {
         )}
 
       {/* Results */}
-      {!isLoading && tracks.length > 0 && (
+      {tracks.length > 0 && (
         <div
           ref={resultsRef}
         >
@@ -629,32 +505,26 @@ export function SoundCloudDownloader() {
               </CardHeader>
             </div>
             <CardContent className="px-8 py-6 space-y-6">
-              {activeTab === "single" ? (
-                <div className="space-y-4">
-                  {tracks.map((item, index) => (
-                    <div key={item.id} className="py-2">
-                      <SearchResultCard item={item} index={index} />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <VirtualizedSearchResults
-                  items={tracks}
-                  height={400}
-                  itemHeight={180}
-                  renderItem={(item, index) => (
-                    <div key={item.id} className="py-4">
-                      <SearchResultCard item={item} index={index} />
-                    </div>
-                  )}
-                />
-              )}
-              {activeTab === "search" && searchState.hasMore && !isLoading && (
+              <div className="space-y-4">
+                {tracks.map((item, index) => (
+                  <div key={item.id} className="py-2">
+                    <SearchResultCard
+                      item={item}
+                      index={index}
+                      progress={getProgressForTrack(item.id)}
+                      onDownload={handleDownloadSingle}
+                      isAnyLoading={isAnyLoading}
+                    />
+                  </div>
+                ))}
+              </div>
+              {activeTab === "search" && searchState.hasMore && (
                 <div className="flex justify-center pt-4 border-t">
                   <Button
                     variant="outline"
                     onClick={() => setPage(p => p + 1)}
                     className="min-w-[200px]"
+                    disabled={isLoading}
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center">

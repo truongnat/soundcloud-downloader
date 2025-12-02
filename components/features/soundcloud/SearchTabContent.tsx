@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { SoundCloudSearchResponse, SoundCloudSearchItem } from "@/types/soundcloud";
-import { SearchResultItem } from "./SoundCloudDownloader"; // Assuming this is where SearchResultItem is defined
+import { SearchResultItem } from "./types";
 import { getClientIdApiPath, getSearchApiPath } from "@/lib/get-api-endpoint";
 import { useUrlState } from "@/lib/use-url-state";
 import { ActionInputBar } from "@/components/common";
@@ -25,6 +25,7 @@ interface SearchTabContentProps {
   onStateChange?: (state: { hasMore: boolean; searchQuery: string }) => void;
   page?: number;
   onLoadMore?: () => void;
+  clientId: string | null;
 }
 
 export function SearchTabContent({
@@ -37,6 +38,7 @@ export function SearchTabContent({
   tracks,
   onStateChange,
   page: parentPage,
+  clientId,
 }: SearchTabContentProps & { tracks: SearchResultItem[] }) {
   const { setQueryParam, getQueryParam } = useUrlState();
   const [searchQuery, setSearchQuery] = useState(() => getQueryParam("q") || "");
@@ -64,9 +66,20 @@ export function SearchTabContent({
     const urlQuery = getQueryParam("q");
     if (urlQuery && !tracks.length) {
       setSearchQuery(urlQuery);
-      handleSearch();
+      // Only search if we have a client ID, otherwise wait for it?
+      // Actually, handleSearch checks for clientId.
+      // But if clientId is null initially, we might fail.
+      // We should depend on clientId being available.
     }
   }, []);
+
+  // Trigger search when clientId becomes available if we have a query and no tracks
+  useEffect(() => {
+    const urlQuery = getQueryParam("q");
+    if (urlQuery && !tracks.length && clientId) {
+      handleSearch();
+    }
+  }, [clientId]);
 
   const handleSearch = async (isLoadMore = false) => {
     if (!searchQuery.trim()) {
@@ -74,32 +87,31 @@ export function SearchTabContent({
       return;
     }
 
+    if (!clientId) {
+      // If clientId is not ready, we can't search.
+      // Ideally the parent handles loading state of clientId.
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    
+
     if (!isLoadMore) {
       setQueryParam("q", searchQuery);
     }
-    
+
     if (!isLoadMore) {
       currentPage.current = 1;
       setHasMore(true);
       currentSearch.current = searchQuery;
     }
-    
+
     setLastSearchQuery(searchQuery);
 
     try {
-      const clientIdRes = await fetch(getClientIdApiPath());
-      const { clientId, error } = await clientIdRes.json();
+      // Removed internal client ID fetch
 
-      if (error) {
-        setError("Lỗi khi lấy client ID. Vui lòng thử lại.");
-        toast.error("Lỗi khi lấy client ID");
-        return;
-      }
-
-      const offset = isLoadMore ? currentPage.current * 10 : 0;
+      const offset = isLoadMore ? (currentPage.current - 1) * 10 : 0;
       const response = await fetch(
         getSearchApiPath(searchQuery, clientId, offset)
       );
@@ -150,11 +162,15 @@ export function SearchTabContent({
         });
 
         if (isLoadMore) {
-          setTracks((prev: SearchResultItem[]) => [...prev, ...newResults]);
+          setTracks((prev: SearchResultItem[]) => {
+            const existingIds = new Set(prev.map(item => item.id));
+            const uniqueNewResults = newResults.filter(item => !existingIds.has(item.id));
+            return [...prev, ...uniqueNewResults];
+          });
         } else {
           setTracks(newResults);
         }
-        
+
         setHasMore(newResults.length === 10);
         if (!isLoadMore) {
           toast.success(`Tìm thấy kết quả cho "${searchQuery}"`);

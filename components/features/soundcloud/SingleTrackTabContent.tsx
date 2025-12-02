@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 import { toast } from "sonner";
 
-import { SearchResultItem } from "./SoundCloudDownloader"; // Assuming this is where SearchResultItem is defined
+import { SearchResultItem } from "./types";
 import { getClientIdApiPath, getSongAPiPath } from "@/lib/get-api-endpoint";
 import { useUrlState } from "@/lib/use-url-state";
 import { ActionInputBar } from "@/components/common";
@@ -14,6 +14,7 @@ interface SingleTrackTabContentProps {
   setError: (error: string | null) => void;
   isLoading: boolean;
   isAnyLoading: boolean;
+  clientId: string | null;
 }
 
 export function SingleTrackTabContent({
@@ -22,6 +23,7 @@ export function SingleTrackTabContent({
   setError,
   isLoading,
   isAnyLoading,
+  clientId,
 }: SingleTrackTabContentProps) {
   const { setQueryParam, getQueryParam } = useUrlState();
   const [url, setUrl] = useState(() => getQueryParam("sc_track_url") || "");
@@ -34,10 +36,10 @@ export function SingleTrackTabContent({
   // Auto-load when there's a URL in the query params
   React.useEffect(() => {
     const urlFromQuery = getQueryParam("sc_track_url");
-    if (urlFromQuery) {
+    if (urlFromQuery && clientId) {
       handleUrlSubmit(urlFromQuery);
     }
-  }, []);
+  }, [clientId]);
 
   const handleUrlSubmit = async (submittedUrl?: string) => {
     const urlToUse = submittedUrl || url;
@@ -46,19 +48,16 @@ export function SingleTrackTabContent({
       return;
     }
 
+    if (!clientId) {
+      return;
+    }
+
     setIsLoading(true);
     // setQueryParam("url", urlToUse); // Removed old param setting
     setError(null);
 
     try {
-      const clientIdRes = await fetch(getClientIdApiPath());
-      const { clientId, error } = await clientIdRes.json();
-
-      if (error) {
-        setError("Lỗi khi lấy client ID. Vui lòng thử lại.");
-        toast.error("Lỗi khi lấy client ID");
-        return;
-      }
+      // Removed internal client ID fetch
 
       let finalUrl = url.includes("?")
         ? `${url}&client_id=${clientId}`

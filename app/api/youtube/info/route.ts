@@ -4,7 +4,7 @@ import { getYouTubeVideo, getYouTubePlaylist } from "@/lib/youtube-api";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { url, type } = body;
+        const { url, type, start, end } = body;
 
         if (!url) {
             return NextResponse.json({ error: "URL is required" }, { status: 400 });
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
         let data;
         if (type === "playlist") {
-            data = await getYouTubePlaylist(url);
+            data = await getYouTubePlaylist(url, start, end);
         } else {
             // Default to video, or auto-detect could be implemented in lib
             data = await getYouTubeVideo(url);

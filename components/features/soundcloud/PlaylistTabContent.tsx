@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 import { toast } from "sonner";
 
-import { SearchResultItem } from "./SoundCloudDownloader"; // Assuming this is where SearchResultItem is defined
+import { SearchResultItem } from "./types";
 import { getClientIdApiPath, getPlaylistApiPath } from "@/lib/get-api-endpoint";
 import { useUrlState } from "@/lib/use-url-state";
 import { ActionInputBar } from "@/components/common";
@@ -14,6 +14,7 @@ interface PlaylistTabContentProps {
   setError: (error: string | null) => void;
   isLoading: boolean;
   isAnyLoading: boolean;
+  clientId: string | null;
 }
 
 export function PlaylistTabContent({
@@ -22,6 +23,7 @@ export function PlaylistTabContent({
   setError,
   isLoading,
   isAnyLoading,
+  clientId,
 }: PlaylistTabContentProps) {
   const { setQueryParam, getQueryParam } = useUrlState();
   const [url, setUrl] = useState(() => getQueryParam("sc_playlist_url") || "");
@@ -34,7 +36,7 @@ export function PlaylistTabContent({
   // Auto-load when there's a URL in the query params
   React.useEffect(() => {
     const urlFromQuery = getQueryParam("sc_playlist_url");
-    if (urlFromQuery) {
+    if (urlFromQuery && clientId) {
       // If we have a URL, we might want to trigger the fetch automatically
       // But we need to be careful not to trigger it if it's just being typed
       // For now, let's just ensure the input is populated (handled by useState)
@@ -43,7 +45,7 @@ export function PlaylistTabContent({
       // Let's keep it but use the new param name.
       handleUrlSubmit(urlFromQuery);
     }
-  }, []);
+  }, [clientId]);
 
   const handleUrlSubmit = async (submittedUrl?: string) => {
     const urlToUse = submittedUrl || url;
@@ -52,23 +54,24 @@ export function PlaylistTabContent({
       return;
     }
 
+    if (!clientId) {
+      // If clientId is not available, we cannot proceed.
+      // This case should ideally be handled by the parent component providing clientId.
+      setError("Client ID không có sẵn. Vui lòng thử lại sau.");
+      toast.error("Client ID không có sẵn");
+      return;
+    }
+
     setIsLoading(true);
     // setQueryParam("url", urlToUse); // Removed old param setting
     setError(null);
 
     try {
-      const clientIdRes = await fetch(getClientIdApiPath());
-      const { clientId, error } = await clientIdRes.json();
+      // Removed internal client ID fetch
 
-      if (error) {
-        setError("Lỗi khi lấy client ID. Vui lòng thử lại.");
-        toast.error("Lỗi khi lấy client ID");
-        return;
-      }
-
-      let finalUrl = url.includes("?")
-        ? `${url}&client_id=${clientId}`
-        : `${url}?client_id=${clientId}`;
+      let finalUrl = urlToUse.includes("?")
+        ? `${urlToUse}&client_id=${clientId}`
+        : `${urlToUse}?client_id=${clientId}`;
 
       const response = await fetch(
         getPlaylistApiPath(finalUrl)

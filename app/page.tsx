@@ -8,8 +8,16 @@ import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { motion } from "motion/react";
 import { Music, Youtube, Zap, ShieldCheck, Layers } from "lucide-react";
 
+import { useUrlState } from "@/lib/use-url-state";
+import { useEffect } from "react";
+
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("soundcloud");
+  const { getQueryParam, setQueryParam } = useUrlState();
+  const [activeTab, setActiveTab] = useState(() => getQueryParam("service") || "soundcloud");
+
+  useEffect(() => {
+    setQueryParam("service", activeTab);
+  }, [activeTab, setQueryParam]);
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
@@ -104,7 +112,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 text-center text-muted-foreground border-t">
-        <p>© 2024 Universal Music Downloader. Built for music lovers.</p>
+        <p>© {new Date().getFullYear()} Universal Music Downloader. Built for music lovers.</p>
       </footer>
     </div>
   );

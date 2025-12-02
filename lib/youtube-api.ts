@@ -95,16 +95,21 @@ export const getYouTubeVideo = async (url: string): Promise<any> => {
     }
 }
 
-export const getYouTubePlaylist = async (url: string): Promise<any> => {
+export const getYouTubePlaylist = async (url: string, start?: number, end?: number): Promise<any> => {
     try {
         const yt = await initYtDlp();
         // flat-playlist is faster for just getting the list
-        const metadata = await yt.execPromise([
+        const args = [
             url,
             ...ffmpegArgs,
             "--dump-single-json",
             "--flat-playlist"
-        ]);
+        ];
+
+        if (start) args.push("--playlist-start", start.toString());
+        if (end) args.push("--playlist-end", end.toString());
+
+        const metadata = await yt.execPromise(args);
         const data = JSON.parse(metadata);
         // Filter out private and deleted videos from the playlist entries
         if (data.entries && Array.isArray(data.entries)) {
