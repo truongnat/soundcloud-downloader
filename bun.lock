@@ -60,6 +60,7 @@
         "ts-jest": "^29.4.4",
         "vaul": "^1.1.2",
         "yt-dlp-exec": "^1.0.2",
+        "yt-dlp-wrap": "^2.3.12",
       },
       "devDependencies": {
         "@biomejs/biome": "2.2.0",
@@ -1221,6 +1222,8 @@
     "yocto-queue": ["yocto-queue@1.2.1", "", {}, "sha512-AyeEbWOu/TAXdxlV9wmGcR0+yh2j3vYPGOECcIj2S7MkrLyC7ne+oye2BKTItt0ii2PHk4cDy+95+LshzbXnGg=="],
 
     "yt-dlp-exec": ["yt-dlp-exec@1.0.2", "", { "dependencies": { "dargs": "~7.0.0", "execa": "~5.1.0", "is-unix": "~2.0.1", "mkdirp": "~1.0.4", "node-fetch": "~2.6.5" } }, "sha512-swKtruQmGBs+Xrxy0wCZ2FxCT167EpBYIWdj/klTzNB2HrHng/qFlKo/C0WVlopbww8/uMIGQR6grXQ2ObcrAw=="],
+
+    "yt-dlp-wrap": ["yt-dlp-wrap@2.3.12", "", {}, "sha512-P8fJ+6M1YjukyJENCTviNLiZ8mokxprR54ho3DsSKPWDcac489OjRiStGEARJr6un6ETS6goTn4CWl/b/rM3aA=="],
 
     "@babel/core/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
