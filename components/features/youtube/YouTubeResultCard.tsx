@@ -7,7 +7,10 @@ import {
     DownloadCloud,
     Youtube,
     Clock,
+    Copy,
+    Check,
 } from "lucide-react";
+import { toast } from "sonner";
 import { YouTubeItem, DownloadProgress } from "./types";
 
 interface YouTubeResultCardProps {
@@ -18,6 +21,7 @@ interface YouTubeResultCardProps {
 }
 
 export const YouTubeResultCard = React.memo(({ item, progress, onDownload, isDownloadingAll }: YouTubeResultCardProps) => {
+    const [isCopied, setIsCopied] = React.useState(false);
     const isDownloading = progress?.status === "downloading";
     const isCompleted = progress?.status === "completed";
 
@@ -57,6 +61,19 @@ export const YouTubeResultCard = React.memo(({ item, progress, onDownload, isDow
                     </div>
                 )}
             </div>
+            <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                    navigator.clipboard.writeText(item.url);
+                    toast.success("Đã sao chép liên kết");
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 2000);
+                }}
+                title="Sao chép liên kết"
+            >
+                {isCopied ? <Check className="w-5 h-5 text-green-500" /> : <Copy className="w-5 h-5" />}
+            </Button>
             <Button
                 size="icon"
                 variant="ghost"

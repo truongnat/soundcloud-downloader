@@ -10,7 +10,10 @@ import {
     Clock,
     User,
     ListMusic,
+    Copy,
+    Check,
 } from "lucide-react";
+import { toast } from "sonner";
 import { SearchResultItem, DownloadProgress } from "./types";
 
 interface SearchResultCardProps {
@@ -22,6 +25,7 @@ interface SearchResultCardProps {
 }
 
 export const SearchResultCard = React.memo(({ item, index, progress, onDownload, isAnyLoading }: SearchResultCardProps) => {
+    const [isCopied, setIsCopied] = React.useState(false);
     const isDownloading = progress?.status === "downloading";
     const isCompleted = progress?.status === "completed";
 
@@ -125,6 +129,30 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
                                 >
                                     <PlayCircle className="w-4 h-4 mr-2" />
                                     Mở trên SC
+                                </Button>
+                            </div>
+                            <div>
+                                <Button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(item.url);
+                                        toast.success("Đã sao chép liên kết");
+                                        setIsCopied(true);
+                                        setTimeout(() => setIsCopied(false), 2000);
+                                    }}
+                                    variant="ghost"
+                                    className="whitespace-nowrap transition-all duration-200 w-full"
+                                >
+                                    {isCopied ? (
+                                        <>
+                                            <Check className="w-4 h-4 mr-2 text-green-500" />
+                                            Đã sao chép
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="w-4 h-4 mr-2" />
+                                            Sao chép Link
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </div>
