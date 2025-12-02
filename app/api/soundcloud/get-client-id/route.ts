@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scrapeClientId } from "@/lib/scapper-client-id";
+import { unstable_cache } from "next/cache";
 
-let cachedClientId: string | null = null;
-let cacheTimestamp: number | null = null;
-
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const getCachedClientId = unstable_cache(
+  async () => {
+    return await scrapeClientId();
+  },
+  ["soundcloud-client-id"],
+  {
+    revalidate: 24 * 60 * 60, // 24 hours
+    tags: ["soundcloud-client-id"],
+  }
+);
 
 export async function GET(req: NextRequest) {
-  const now = Date.now();
-
-  if (cachedClientId && cacheTimestamp && now - cacheTimestamp < CACHE_DURATION) {
-    return NextResponse.json({ clientId: cachedClientId });
-  }
-
   try {
-    const clientId = await scrapeClientId();
+    const clientId = await getCachedClientId();
 
     if (!clientId) {
       return NextResponse.json(
@@ -22,9 +23,6 @@ export async function GET(req: NextRequest) {
         { status: 500 }
       );
     }
-
-    cachedClientId = clientId;
-    cacheTimestamp = now;
 
     return NextResponse.json({ clientId });
   } catch (error) {
