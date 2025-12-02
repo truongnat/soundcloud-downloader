@@ -25,7 +25,17 @@ import { useUrlState } from "@/lib/use-url-state";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { AdBanner } from "@/components/common/AdBanner";
 
-export function YouTubeDownloader() {
+interface YouTubeDownloaderProps {
+    dict?: {
+        tabs: {
+            search: string;
+            single: string;
+            playlist: string;
+        }
+    }
+}
+
+export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
     const { setOnlyQueryParams, getQueryParam } = useUrlState();
     const [activeTab, setActiveTab] = useState(() => getQueryParam("yt_tab") || "search");
     const [items, setItems] = useState<YouTubeItem[]>([]);
@@ -157,17 +167,17 @@ export function YouTubeDownloader() {
                                 tabs={[
                                     {
                                         id: "search",
-                                        label: "Tìm kiếm",
+                                        label: dict?.tabs.search || "Tìm kiếm",
                                         icon: <Search className="w-4 h-4" />,
                                     },
                                     {
                                         id: "single",
-                                        label: "Một bài",
+                                        label: dict?.tabs.single || "Một bài",
                                         icon: <PlayCircle className="w-4 h-4" />,
                                     },
                                     {
                                         id: "playlist",
-                                        label: "Playlist",
+                                        label: dict?.tabs.playlist || "Playlist",
                                         icon: <ListMusic className="w-4 h-4" />,
                                     },
                                 ]}

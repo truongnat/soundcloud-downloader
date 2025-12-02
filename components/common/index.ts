@@ -4,10 +4,13 @@ import { ActionInputBar } from './ActionInputBar';
 import { ModeToggle } from './ModeToggle';
 import { VirtualizedList } from './VirtualizedList';
 
+import { LanguageSwitcher } from './LanguageSwitcher';
+
 export {
   ScrollToTopButton,
   Container,
   ActionInputBar,
   ModeToggle,
-  VirtualizedList
+  VirtualizedList,
+  LanguageSwitcher
 };

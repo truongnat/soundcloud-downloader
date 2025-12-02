@@ -46,7 +46,17 @@ const getConcurrencyLimit = () => {
 
 const limit = pLimit(getConcurrencyLimit());
 
-export function SoundCloudDownloader() {
+interface SoundCloudDownloaderProps {
+  dict?: {
+    tabs: {
+      search: string;
+      single: string;
+      playlist: string;
+    }
+  }
+}
+
+export function SoundCloudDownloader({ dict }: SoundCloudDownloaderProps) {
   const { setQueryParam, setOnlyQueryParams, getQueryParam } = useUrlState();
   const [activeTab, setActiveTab] = useState(() => getQueryParam("tab") || "search");
   const [tracks, setTracks] = useState<SearchResultItem[]>([]);
@@ -311,17 +321,17 @@ export function SoundCloudDownloader() {
                   tabs={[
                     {
                       id: "search",
-                      label: "Tìm kiếm",
+                      label: dict?.tabs.search || "Tìm kiếm",
                       icon: <Search className="w-4 h-4" />,
                     },
                     {
                       id: "single",
-                      label: "Một bài",
+                      label: dict?.tabs.single || "Một bài",
                       icon: <PlayCircle className="w-4 h-4" />,
                     },
                     {
                       id: "playlist",
-                      label: "Playlist",
+                      label: dict?.tabs.playlist || "Playlist",
                       icon: <ListMusic className="w-4 h-4" />,
                     },
                   ]}

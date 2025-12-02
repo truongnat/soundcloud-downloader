@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { ClientIdProvider } from "@/contexts/ClientIdProvider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ScrollToTopButton, ModeToggle } from "@/components/common";
+import { ScrollToTopButton, ModeToggle, LanguageSwitcher } from "@/components/common";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,13 +41,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export async function generateStaticParams() {
+  return [{ lang: 'en' }, { lang: 'vi' }, { lang: 'zh' }, { lang: 'ko' }, { lang: 'ja' }]
+}
+
+export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ lang: string }>;
 }>) {
+  const { lang } = await params;
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -64,7 +71,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="fixed top-4 right-4 z-50">
+            <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+              <LanguageSwitcher />
               <ModeToggle />
             </div>
             {children}

@@ -1,0 +1,42 @@
+{
+    "hero": {
+        "title": "ユニバーサルミュージックダウンローダー",
+        "description": "SoundCloudとYouTubeから高品質の音楽をダウンロード。プレイリスト対応、超高速、完全無料。"
+    },
+    "tabs": {
+        "soundcloud": "SoundCloud",
+        "youtube": "YouTube"
+    },
+    "features": {
+        "title": "選ばれる理由",
+        "speed": {
+            "title": "超高速",
+            "description": "マルチスレッドダウンロード技術を使用して、ダウンロード速度を最適化します。"
+        },
+        "playlist": {
+            "title": "プレイリスト対応",
+            "description": "ワンクリックでSoundCloudとYouTubeのプレイリスト全体をダウンロードできます。"
+        },
+        "safe": {
+            "title": "安全で無料",
+            "description": "悪意のある広告なし、完全無料、プライバシーを尊重します。"
+        }
+    },
+    "footer": {
+        "text": "ユニバーサルミュージックダウンローダー。音楽愛好家のために作られました。"
+    },
+    "soundcloud": {
+        "tabs": {
+            "search": "検索",
+            "single": "シングルトラック",
+            "playlist": "プレイリスト"
+        }
+    },
+    "youtube": {
+        "tabs": {
+            "search": "検索",
+            "single": "シングルビデオ",
+            "playlist": "プレイリスト"
+        }
+    }
+}

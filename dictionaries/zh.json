@@ -1,0 +1,42 @@
+{
+    "hero": {
+        "title": "通用音乐下载器",
+        "description": "从 SoundCloud 和 YouTube 下载高品质音乐。支持播放列表，超快速度，完全免费。"
+    },
+    "tabs": {
+        "soundcloud": "SoundCloud",
+        "youtube": "YouTube"
+    },
+    "features": {
+        "title": "为什么选择我们？",
+        "speed": {
+            "title": "超快速度",
+            "description": "使用多线程下载技术优化您的下载速度。"
+        },
+        "playlist": {
+            "title": "支持播放列表",
+            "description": "一键下载 SoundCloud 和 YouTube 的整个播放列表。"
+        },
+        "safe": {
+            "title": "安全且免费",
+            "description": "无恶意广告，完全免费，尊重隐私。"
+        }
+    },
+    "footer": {
+        "text": "通用音乐下载器。为音乐爱好者打造。"
+    },
+    "soundcloud": {
+        "tabs": {
+            "search": "搜索",
+            "single": "单曲",
+            "playlist": "播放列表"
+        }
+    },
+    "youtube": {
+        "tabs": {
+            "search": "搜索",
+            "single": "单曲视频",
+            "playlist": "播放列表"
+        }
+    }
+}

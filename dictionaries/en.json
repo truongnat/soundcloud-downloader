@@ -1,0 +1,42 @@
+{
+    "hero": {
+        "title": "Universal Music Downloader",
+        "description": "Download high-quality music from SoundCloud and YouTube. Supports Playlists, ultra-fast speed, completely free."
+    },
+    "tabs": {
+        "soundcloud": "SoundCloud",
+        "youtube": "YouTube"
+    },
+    "features": {
+        "title": "Why Choose Us?",
+        "speed": {
+            "title": "Ultra Fast Speed",
+            "description": "Uses multi-thread downloading technology to optimize your download speed."
+        },
+        "playlist": {
+            "title": "Playlist Support",
+            "description": "Download entire Playlists from SoundCloud and YouTube with just one click."
+        },
+        "safe": {
+            "title": "Safe & Free",
+            "description": "No malicious ads, completely free, and respects privacy."
+        }
+    },
+    "footer": {
+        "text": "Universal Music Downloader. Built for music lovers."
+    },
+    "soundcloud": {
+        "tabs": {
+            "search": "Search",
+            "single": "Single Track",
+            "playlist": "Playlist"
+        }
+    },
+    "youtube": {
+        "tabs": {
+            "search": "Search",
+            "single": "Single Video",
+            "playlist": "Playlist"
+        }
+    }
+}

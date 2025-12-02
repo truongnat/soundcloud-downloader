@@ -1,0 +1,42 @@
+{
+    "hero": {
+        "title": "유니버설 뮤직 다운로더",
+        "description": "SoundCloud 및 YouTube에서 고품질 음악을 다운로드하세요. 재생 목록 지원, 초고속 속도, 완전 무료."
+    },
+    "tabs": {
+        "soundcloud": "SoundCloud",
+        "youtube": "YouTube"
+    },
+    "features": {
+        "title": "왜 우리를 선택해야 할까요?",
+        "speed": {
+            "title": "초고속 속도",
+            "description": "멀티 스레드 다운로드 기술을 사용하여 다운로드 속도를 최적화합니다."
+        },
+        "playlist": {
+            "title": "재생 목록 지원",
+            "description": "클릭 한 번으로 SoundCloud 및 YouTube의 전체 재생 목록을 다운로드하세요."
+        },
+        "safe": {
+            "title": "안전하고 무료",
+            "description": "악성 광고 없음, 완전 무료, 개인 정보 보호."
+        }
+    },
+    "footer": {
+        "text": "유니버설 뮤직 다운로더. 음악 애호가를 위해 제작되었습니다."
+    },
+    "soundcloud": {
+        "tabs": {
+            "search": "검색",
+            "single": "싱글 트랙",
+            "playlist": "재생 목록"
+        }
+    },
+    "youtube": {
+        "tabs": {
+            "search": "검색",
+            "single": "싱글 비디오",
+            "playlist": "재생 목록"
+        }
+    }
+}

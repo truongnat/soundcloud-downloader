@@ -1,0 +1,42 @@
+{
+    "hero": {
+        "title": "Universal Music Downloader",
+        "description": "Tải nhạc chất lượng cao từ SoundCloud và YouTube. Hỗ trợ Playlist, tốc độ cực nhanh, hoàn toàn miễn phí."
+    },
+    "tabs": {
+        "soundcloud": "SoundCloud",
+        "youtube": "YouTube"
+    },
+    "features": {
+        "title": "Tại sao chọn chúng tôi?",
+        "speed": {
+            "title": "Tốc độ cực nhanh",
+            "description": "Sử dụng công nghệ tải đa luồng giúp tối ưu hóa tốc độ tải xuống của bạn."
+        },
+        "playlist": {
+            "title": "Hỗ trợ Playlist",
+            "description": "Tải xuống toàn bộ Playlist từ SoundCloud và YouTube chỉ với một cú click."
+        },
+        "safe": {
+            "title": "An toàn & Miễn phí",
+            "description": "Không chứa quảng cáo độc hại, hoàn toàn miễn phí và tôn trọng quyền riêng tư."
+        }
+    },
+    "footer": {
+        "text": "Universal Music Downloader. Built for music lovers."
+    },
+    "soundcloud": {
+        "tabs": {
+            "search": "Tìm kiếm",
+            "single": "Bài hát",
+            "playlist": "Playlist"
+        }
+    },
+    "youtube": {
+        "tabs": {
+            "search": "Tìm kiếm",
+            "single": "Video lẻ",
+            "playlist": "Playlist"
+        }
+    }
+}
