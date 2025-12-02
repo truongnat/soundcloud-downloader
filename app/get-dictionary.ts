@@ -8,4 +8,6 @@ const dictionaries = {
     ja: () => import('@/dictionaries/ja.json').then((module) => module.default),
 }
 
-export const getDictionary = async (locale: 'en' | 'vi' | 'zh' | 'ko' | 'ja') => dictionaries[locale]()
+import { cache } from 'react'
+
+export const getDictionary = cache(async (locale: 'en' | 'vi' | 'zh' | 'ko' | 'ja') => dictionaries[locale]())

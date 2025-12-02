@@ -11,12 +11,14 @@ interface ClientIdContextType {
 
 const ClientIdContext = createContext<ClientIdContextType | undefined>(undefined);
 
-export const ClientIdProvider = ({ children }: { children: ReactNode }) => {
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export const ClientIdProvider = ({ children, initialClientId }: { children: ReactNode; initialClientId?: string | null }) => {
+  const [clientId, setClientId] = useState<string | null>(initialClientId || null);
+  const [isLoading, setIsLoading] = useState(!initialClientId);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialClientId) return;
+
     const fetchClientId = async () => {
       try {
         const res = await fetch(getClientIdApiPath());
@@ -33,7 +35,7 @@ export const ClientIdProvider = ({ children }: { children: ReactNode }) => {
     };
 
     fetchClientId();
-  }, []);
+  }, [initialClientId]);
 
   return (
     <ClientIdContext.Provider value={{ clientId, isLoading, error }}>

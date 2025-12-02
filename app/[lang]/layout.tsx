@@ -1,10 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "../globals.css";
+
+// Contexts & Components
 import { ClientIdProvider } from "@/contexts/ClientIdProvider";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ScrollToTopButton, ModeToggle, LanguageSwitcher } from "@/components/common";
+import { HeaderControls, FooterControls } from "@/components/common/LayoutUI";
+import { getDictionary } from "../get-dictionary";
+import { getClientIdApiPath } from "@/lib/get-api-endpoint";
 
+// --- Constants & Types ---
+export type Locale = "en" | "vi" | "zh" | "ko" | "ja";
+const LOCALES: Locale[] = ["en", "vi", "zh", "ko", "ja"];
+const BASE_URL = "https://soundcloud-downloader-pro.vercel.app";
+
+type Props = {
+  params: Promise<{ lang: Locale }>;
+};
+
+// --- Fonts ---
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -15,9 +30,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { getDictionary } from "../get-dictionary";
-
-export async function generateMetadata({ params }: { params: Promise<{ lang: "en" | "vi" | "zh" | "ko" | "ja" }> }): Promise<Metadata> {
+// --- Metadata ---
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang } = await params;
   const dict = await getDictionary(lang);
 
@@ -25,16 +39,17 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: "en
     title: dict.hero.title,
     description: dict.hero.description,
     keywords: "SoundCloud downloader, YouTube downloader, download music, MP3 downloader, playlist downloader",
+    metadataBase: new URL(BASE_URL),
     openGraph: {
       title: dict.hero.title,
       description: dict.hero.description,
-      url: `https://soundcloud-downloader-pro.vercel.app/${lang}`,
+      url: `/${lang}`,
       type: "website",
       locale: lang,
       siteName: "Universal Music Downloader",
       images: [
         {
-          url: "https://soundcloud-downloader-pro.vercel.app/og-image.png",
+          url: "/og-image.png",
           width: 1200,
           height: 630,
           alt: dict.hero.title,
@@ -45,17 +60,21 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: "en
       card: "summary_large_image",
       title: dict.hero.title,
       description: dict.hero.description,
-      images: ["https://soundcloud-downloader-pro.vercel.app/og-image.png"],
+      images: ["/og-image.png"],
     },
     alternates: {
-      canonical: `https://soundcloud-downloader-pro.vercel.app/${lang}`,
+      canonical: `/${lang}`,
       languages: {
-        'en': 'https://soundcloud-downloader-pro.vercel.app/en',
-        'vi': 'https://soundcloud-downloader-pro.vercel.app/vi',
-        'zh': 'https://soundcloud-downloader-pro.vercel.app/zh',
-        'ko': 'https://soundcloud-downloader-pro.vercel.app/ko',
-        'ja': 'https://soundcloud-downloader-pro.vercel.app/ja',
+        en: "/en",
+        vi: "/vi",
+        zh: "/zh",
+        ko: "/ko",
+        ja: "/ja",
       },
+    },
+    icons: {
+      icon: "/favicon.svg",
+      apple: "/apple-touch-icon.png",
     },
     robots: {
       index: true,
@@ -63,50 +82,73 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: "en
       googleBot: {
         index: true,
         follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
   };
 }
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
+};
+
 export async function generateStaticParams() {
-  return [{ lang: 'en' }, { lang: 'vi' }, { lang: 'zh' }, { lang: 'ko' }, { lang: 'ja' }]
+  return LOCALES.map((lang) => ({ lang }));
 }
 
+// --- Helper: Server-Side Fetch ---
+async function fetchClientId(): Promise<string | null> {
+  try {
+    // Attempt to fetch Client ID on the server to prevent waterfall
+    // Note: This requires the API to be available at build/runtime
+    const res = await fetch(getClientIdApiPath(), { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.clientId || null;
+  } catch (error) {
+    console.warn("Failed to fetch Client ID on server:", error);
+    return null;
+  }
+}
+
+// --- Root Layout ---
 export default async function RootLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ lang: string }>;
+  params: Promise<{ lang: Locale }>;
 }>) {
   const { lang } = await params;
+
+  // Parallel Data Fetching (Dictionary is already cached, ClientID is new)
+  const initialClientId = await fetchClientId();
+
   return (
     <html lang={lang} suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1650067341320347"
-          crossOrigin="anonymous"></script>
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <ClientIdProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* Optimized Script Loading */}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1650067341320347"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+
+        <ClientIdProvider initialClientId={initialClientId}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
             enableSystem
             disableTransitionOnChange
           >
-            <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-              <LanguageSwitcher />
-              <ModeToggle />
-            </div>
+            <HeaderControls />
             {children}
-            <ScrollToTopButton />
+            <FooterControls />
           </ThemeProvider>
         </ClientIdProvider>
       </body>
