@@ -4,22 +4,8 @@ import fs from "fs";
 import ffmpegPath from "ffmpeg-static";
 
 // Ensure we have a place to store the binary
-const binaryPath = path.join(process.cwd(), "bin", "yt-dlp.exe");
-
-// Initialize wrapper
-// We might need to download the binary first if it doesn't exist
 const initYtDlp = async () => {
-    const binDir = path.dirname(binaryPath);
-    if (!fs.existsSync(binDir)) {
-        fs.mkdirSync(binDir, { recursive: true });
-    }
-
-    if (!fs.existsSync(binaryPath)) {
-        console.log("Downloading yt-dlp binary...");
-        await YtdlpWrap.downloadFromGithub(binaryPath);
-        console.log("Downloaded yt-dlp binary");
-    }
-    return new YtdlpWrap(binaryPath);
+    return new YtdlpWrap();
 };
 
 const ffmpegArgs = ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : [];
