@@ -1,28 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getYouTubeVideo, getYouTubePlaylist } from "@/lib/youtube-api";
-import { unstable_cache } from "next/cache";
-
-const getCachedYouTubeVideo = unstable_cache(
-    async (url: string) => {
-        return await getYouTubeVideo(url);
-    },
-    ["youtube-video-info"],
-    {
-        revalidate: 3600, // 1 hour
-        tags: ["youtube-video-info"],
-    }
-);
-
-const getCachedYouTubePlaylist = unstable_cache(
-    async (url: string, start?: number, end?: number) => {
-        return await getYouTubePlaylist(url, start, end);
-    },
-    ["youtube-playlist-info"],
-    {
-        revalidate: 3600, // 1 hour
-        tags: ["youtube-playlist-info"],
-    }
-);
 
 export async function POST(req: NextRequest) {
     try {
@@ -35,10 +12,10 @@ export async function POST(req: NextRequest) {
 
         let data;
         if (type === "playlist") {
-            data = await getCachedYouTubePlaylist(url, start, end);
+            data = await getYouTubePlaylist(url, start, end);
         } else {
             // Default to video, or auto-detect could be implemented in lib
-            data = await getCachedYouTubeVideo(url);
+            data = await getYouTubeVideo(url);
         }
 
         return NextResponse.json(data);
@@ -49,4 +26,11 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
+}
+
+export async function GET(req: NextRequest) {
+    return NextResponse.json(
+        { error: "Method GET not allowed. Use POST." },
+        { status: 405 }
+    );
 }
