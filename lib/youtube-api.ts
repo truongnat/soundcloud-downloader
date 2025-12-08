@@ -5,10 +5,10 @@ import ffmpegPath from "ffmpeg-static";
 
 // Ensure we have a place to store the binary
 const initYtDlp = async () => {
-    return new YtdlpWrap();
+    return new YtdlpWrap(ffmpegPath!);
 };
 
-const ffmpegArgs = ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : [];
+const ffmpegArgs = ["--ffmpeg-location", ffmpegPath!];
 
 if (!ffmpegPath) {
     console.warn("ffmpeg-static binary not found. YouTube downloads might fail if merging is required.");
