@@ -2,13 +2,44 @@ import YtdlpWrap from "yt-dlp-wrap";
 import path from "path";
 import fs from "fs";
 import ffmpegPath from "ffmpeg-static";
+import os from "os";
 
 // Ensure we have a place to store the binary
-const initYtDlp = async () => {
-    return new YtdlpWrap(ffmpegPath!);
+const getBinaryPath = () => {
+    // Vercel / serverless environments often only allow writing to /tmp
+    if (process.env.VERCEL || process.platform !== 'win32') {
+        return path.join(os.tmpdir(), 'yt-dlp');
+    }
+    return path.join(process.cwd(), 'bin', 'yt-dlp.exe');
 };
 
-const ffmpegArgs = ["--ffmpeg-location", ffmpegPath!];
+export const initYtDlp = async () => {
+    const binaryPath = getBinaryPath();
+
+    // Ensure directory exists if it's local bin
+    const dir = path.dirname(binaryPath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    if (!fs.existsSync(binaryPath)) {
+        console.log(`Downloading yt-dlp to ${binaryPath}...`);
+        try {
+            await YtdlpWrap.downloadFromGithub(binaryPath);
+            // On Linux/Mac, ensure it is executable
+            if (process.platform !== 'win32') {
+                fs.chmodSync(binaryPath, '755');
+            }
+        } catch (e) {
+            console.error("Failed to download yt-dlp", e);
+            throw e;
+        }
+    }
+
+    return new YtdlpWrap(binaryPath);
+};
+
+export const ffmpegArgs = ffmpegPath ? ["--ffmpeg-location", ffmpegPath] : [];
 
 if (!ffmpegPath) {
     console.warn("ffmpeg-static binary not found. YouTube downloads might fail if merging is required.");
