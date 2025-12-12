@@ -21,6 +21,7 @@ import { YouTubeSingleTrackTabContent } from "./YouTubeSingleTrackTabContent";
 import { YouTubePlaylistTabContent } from "./YouTubePlaylistTabContent";
 import { YouTubeResultCard } from "./YouTubeResultCard";
 import { YouTubeItem, DownloadProgress } from "./types";
+import { AudioPlayer } from "../soundcloud/AudioPlayer";
 import { useUrlState } from "@/lib/use-url-state";
 import { AnimatedTabs } from "@/components/ui/animated-tabs";
 import { AdBanner } from "@/components/common/AdBanner";
@@ -31,11 +32,17 @@ interface YouTubeDownloaderProps {
             search: string;
             single: string;
             playlist: string;
+        },
+        common?: {
+            [key: string]: string;
         }
     }
 }
 
 export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
+    const t = (key: string) => {
+        return dict?.common?.[key] || key;
+    };
     const { setOnlyQueryParams, getQueryParam } = useUrlState();
     const [activeTab, setActiveTab] = useState(() => getQueryParam("yt_tab") || "search");
     const [items, setItems] = useState<YouTubeItem[]>([]);
@@ -44,6 +51,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
     const [downloadProgress, setDownloadProgress] = useState<DownloadProgress[]>([]);
     const [isDownloadingAll, setIsDownloadingAll] = useState(false);
     const [page, setPage] = useState(1);
+    const [previewItem, setPreviewItem] = useState<YouTubeItem | null>(null);
 
     // Reset state on tab change
     useEffect(() => {
@@ -53,6 +61,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
         setDownloadProgress([]);
         setIsDownloadingAll(false);
         setPage(1);
+        setPreviewItem(null);
     }, [activeTab]);
 
     const handleDownload = async (item: YouTubeItem) => {
@@ -62,13 +71,13 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
             const downloadUrl = `/api/youtube/download?url=${encodeURIComponent(item.url)}&format=mp3`;
 
             const response = await fetch(downloadUrl);
-            if (!response.ok) throw new Error("Download failed");
+            if (!response.ok) throw new Error(t("error_download"));
 
             const reader = response.body?.getReader();
             const contentLength = response.headers.get("Content-Length");
             const totalLength = contentLength ? parseInt(contentLength, 10) : 0;
 
-            if (!reader) throw new Error("No response body");
+            if (!reader) throw new Error(t("error_download"));
 
             let receivedLength = 0;
             const chunks = [];
@@ -134,6 +143,14 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
 
     const getProgress = (id: string) => downloadProgress.find(p => p.id === id);
 
+    const handlePreview = (item: YouTubeItem) => {
+        if (previewItem?.id === item.id) {
+            setPreviewItem(null);
+        } else {
+            setPreviewItem(item);
+        }
+    };
+
     return (
         <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
             <Card className="backdrop-blur-sm">
@@ -194,6 +211,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                                 isLoading={isLoading}
                                 page={page}
                                 onLoadMore={() => setPage(p => p + 1)}
+                                dict={dict}
                             />
                         </TabsContent>
 
@@ -203,6 +221,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                                 setIsLoading={setIsLoading}
                                 setError={setError}
                                 isLoading={isLoading}
+                                dict={dict}
                             />
                         </TabsContent>
 
@@ -225,7 +244,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                     <CardContent className="py-10 flex items-center justify-center">
                         <div className="flex items-center gap-3 text-muted-foreground">
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>Đang tải...</span>
+                            <span>{t("downloading")}</span>
                         </div>
                     </CardContent>
                 </Card>
@@ -237,7 +256,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                         <div className="flex flex-col items-center text-center space-y-4">
                             <AlertCircle className="w-12 h-12 text-destructive" />
                             <div>
-                                <h3 className="text-destructive mb-2">Đã xảy ra lỗi</h3>
+                                <h3 className="text-destructive mb-2">{t("error")}</h3>
                                 <p className="text-muted-foreground">{error}</p>
                             </div>
                             <Button
@@ -246,7 +265,7 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                                 disabled={isLoading}
                             >
                                 <RotateCcw className="w-4 h-4 mr-2" />
-                                Thử lại
+                                {t("retry")}
                             </Button>
                         </div>
                     </CardContent>
@@ -256,18 +275,18 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
             {items.length > 0 && (
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Kết quả ({items.length})</CardTitle>
+                        <CardTitle>{t("results")} ({items.length})</CardTitle>
                         {items.length > 1 && (
                             <Button onClick={handleDownloadAll} disabled={isDownloadingAll} variant="outline">
                                 {isDownloadingAll ? (
                                     <>
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Đang tải lần lượt...
+                                        {t("downloading_all")}
                                     </>
                                 ) : (
                                     <>
                                         <DownloadCloud className="w-4 h-4 mr-2" />
-                                        Tải tất cả
+                                        {t("download_all")}
                                     </>
                                 )}
                             </Button>
@@ -281,6 +300,8 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                                 progress={getProgress(item.id)}
                                 onDownload={handleDownload}
                                 isDownloadingAll={isDownloadingAll}
+                                activePreviewId={previewItem?.id}
+                                onPreview={handlePreview}
                             />
                         ))}
                         {activeTab === "search" && (
@@ -294,12 +315,12 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                                     {isLoading ? (
                                         <div className="flex items-center justify-center">
                                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                            Đang tải thêm...
+                                            {t("loading_more")}
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center">
                                             <Search className="w-4 h-4 mr-2" />
-                                            Xem thêm 10 kết quả
+                                            {t("load_more")}
                                         </div>
                                     )}
                                 </Button>
@@ -307,6 +328,15 @@ export function YouTubeDownloader({ dict }: YouTubeDownloaderProps) {
                         )}
                     </CardContent>
                 </Card>
+            )}
+            {previewItem && (
+                <AudioPlayer
+                    src={`/api/youtube/download?url=${encodeURIComponent(previewItem.url)}&format=mp3&preview=true`}
+                    title={previewItem.title}
+                    artist={previewItem.uploader || "YouTube"}
+                    thumbnail={previewItem.thumbnail}
+                    onClose={() => setPreviewItem(null)}
+                />
             )}
         </div>
     );

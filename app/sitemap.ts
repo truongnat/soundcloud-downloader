@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://soundcloud-downloader-pro.vercel.app'
+    const baseUrl = 'https://universal-music-downloader.vercel.app'
     const languages = ['en', 'vi', 'zh', 'ko', 'ja']
 
     const routes = languages.map((lang) => ({

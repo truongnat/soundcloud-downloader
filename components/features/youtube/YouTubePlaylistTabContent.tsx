@@ -10,6 +10,7 @@ interface YouTubePlaylistTabContentProps {
     setIsLoading: (isLoading: boolean) => void;
     setError: (error: string | null) => void;
     isLoading: boolean;
+    dict?: { common?: { [key: string]: string } };
 }
 
 export function YouTubePlaylistTabContent({
@@ -17,7 +18,11 @@ export function YouTubePlaylistTabContent({
     setIsLoading,
     setError,
     isLoading,
+    dict,
 }: YouTubePlaylistTabContentProps) {
+    const t = (key: string) => {
+        return dict?.common?.[key] || key;
+    };
     const { setQueryParam, getQueryParam } = useUrlState();
     const [url, setUrl] = useState(() => getQueryParam("yt_playlist_url") || "");
 
@@ -27,7 +32,7 @@ export function YouTubePlaylistTabContent({
 
     const handleFetch = async () => {
         if (!url.trim()) {
-            toast.error("Vui lòng nhập URL Playlist YouTube");
+            toast.error(t("enter_keyword"));
             return;
         }
 
@@ -60,12 +65,13 @@ export function YouTubePlaylistTabContent({
             }));
 
             setItems(mappedItems);
-            toast.success(`Tìm thấy ${mappedItems.length} video trong playlist`);
+            toast.success(`${t("results_found")}: ${mappedItems.length}`);
+
 
         } catch (err: any) {
             console.error(err);
-            setError(err.message || "Lỗi khi lấy thông tin playlist");
-            toast.error("Lỗi khi lấy thông tin playlist");
+            setError(err.message || t("error"));
+            toast.error(t("error"));
         } finally {
             setIsLoading(false);
         }
@@ -80,8 +86,8 @@ export function YouTubePlaylistTabContent({
             onSubmit={handleFetch}
             disabled={isLoading}
             isLoading={isLoading}
-            buttonText="Lấy playlist"
-            loadingText="Đang tải..."
+            buttonText={t("search_btn")}
+            loadingText={t("searching")}
         />
     );
 }

@@ -12,6 +12,8 @@ import {
     ListMusic,
     Copy,
     Check,
+    Play,
+    Pause,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SearchResultItem, DownloadProgress } from "./types";
@@ -22,12 +24,28 @@ interface SearchResultCardProps {
     progress?: DownloadProgress;
     onDownload: (item: SearchResultItem) => void;
     isAnyLoading: boolean;
+    clientId: string | null;
+    activePreviewId?: string | null;
+    onPreview?: (item: SearchResultItem) => void;
+    dict?: any;
 }
 
-export const SearchResultCard = React.memo(({ item, index, progress, onDownload, isAnyLoading }: SearchResultCardProps) => {
+export const SearchResultCard = React.memo(({ item, index, progress, onDownload, isAnyLoading, clientId, activePreviewId, onPreview, dict }: SearchResultCardProps) => {
+
+    const t = (key: string) => {
+        return dict?.common?.[key] || key;
+    };
     const [isCopied, setIsCopied] = React.useState(false);
     const isDownloading = progress?.status === "downloading";
     const isCompleted = progress?.status === "completed";
+
+    const isPlaying = activePreviewId === item.id;
+
+    const handlePreview = () => {
+        if (onPreview) {
+            onPreview(item);
+        }
+    };
 
     const isTrack = item.kind === "track";
     const isUser = item.kind === "user";
@@ -35,7 +53,7 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
 
     const Icon = isTrack ? Music : isUser ? User : ListMusic;
     const title = item.title;
-    const subtitle = isTrack ? item.artist : isUser ? "Người dùng" : "Playlist";
+    const subtitle = isTrack ? item.artist : isUser ? dict?.soundcloud?.tabs?.single || "Người dùng" : dict?.soundcloud?.tabs?.playlist || "Playlist";
     const duration = isTrack ? item.duration : undefined;
 
     return (
@@ -43,7 +61,7 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
             <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
                 <CardContent className="p-6">
                     <div className="flex flex-col sm:flex-row gap-6">
-                        <div className="w-full sm:w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                        <div className="w-full sm:w-24 h-24 bg-muted rounded-lg flex items-center justify-center overflow-hidden relative group">
                             {item.thumbnail ? (
                                 <img
                                     src={item.thumbnail}
@@ -63,6 +81,24 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
                                 />
                             ) : (
                                 <Icon className="w-8 h-8 text-muted-foreground" />
+                            )}
+
+                            {/* Preview Overlay */}
+                            {isTrack && (
+                                <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${isPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="text-white hover:text-white hover:bg-transparent"
+                                        onClick={handlePreview}
+                                    >
+                                        {isPlaying ? (
+                                            <Pause className="w-8 h-8" />
+                                        ) : (
+                                            <Play className="w-8 h-8" />
+                                        )}
+                                    </Button>
+                                </div>
                             )}
                         </div>
 
@@ -85,7 +121,7 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
                                 <div className="mt-3">
                                     <div className="flex items-center justify-between mb-1">
                                         <span className="text-sm text-muted-foreground">
-                                            {isCompleted ? "Hoàn thành" : "Đang tải..."}
+                                            {isCompleted ? t("downloaded") : t("downloading")}
                                         </span>
                                         <span className="text-sm">{progress.progress}%</span>
                                     </div>
@@ -105,17 +141,17 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
                                         {isCompleted ? (
                                             <>
                                                 <DownloadCloud className="w-4 h-4 mr-2" />
-                                                Đã tải
+                                                {t("downloaded")}
                                             </>
                                         ) : isDownloading ? (
                                             <>
                                                 <Download className="w-4 h-4 mr-2 animate-pulse" />
-                                                Đang tải...
+                                                {t("downloading")}
                                             </>
                                         ) : (
                                             <>
                                                 <Download className="w-4 h-4 mr-2" />
-                                                Tải về
+                                                {t("download")}
                                             </>
                                         )}
                                     </Button>
@@ -128,14 +164,26 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
                                     className="whitespace-nowrap transition-all duration-200 w-full"
                                 >
                                     <PlayCircle className="w-4 h-4 mr-2" />
-                                    Mở trên SC
+                                    {t("open_on")} SC
+                                </Button>
+                                <Button
+                                    onClick={handlePreview}
+                                    variant="outline"
+                                    className="whitespace-nowrap transition-all duration-200 w-full mt-2"
+                                >
+                                    {isPlaying ? (
+                                        <Pause className="w-4 h-4 mr-2" />
+                                    ) : (
+                                        <Play className="w-4 h-4 mr-2" />
+                                    )}
+                                    {isPlaying ? t("playing") : t("preview")}
                                 </Button>
                             </div>
                             <div>
                                 <Button
                                     onClick={() => {
                                         navigator.clipboard.writeText(item.url);
-                                        toast.success("Đã sao chép liên kết");
+                                        toast.success(t("success_copy"));
                                         setIsCopied(true);
                                         setTimeout(() => setIsCopied(false), 2000);
                                     }}
@@ -145,12 +193,12 @@ export const SearchResultCard = React.memo(({ item, index, progress, onDownload,
                                     {isCopied ? (
                                         <>
                                             <Check className="w-4 h-4 mr-2 text-green-500" />
-                                            Đã sao chép
+                                            {t("copied")}
                                         </>
                                     ) : (
                                         <>
                                             <Copy className="w-4 h-4 mr-2" />
-                                            Sao chép Link
+                                            {t("copy_link")}
                                         </>
                                     )}
                                 </Button>

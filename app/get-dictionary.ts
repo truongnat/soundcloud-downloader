@@ -10,4 +10,11 @@ const dictionaries = {
 
 import { cache } from 'react'
 
-export const getDictionary = cache(async (locale: 'en' | 'vi' | 'zh' | 'ko' | 'ja') => dictionaries[locale]())
+export const getDictionary = cache(async (locale: string) => {
+    const loadDictionary = dictionaries[locale as keyof typeof dictionaries];
+    if (loadDictionary) {
+        return loadDictionary();
+    }
+    // Fallback to English if locale is not found
+    return dictionaries.en();
+})

@@ -13,7 +13,7 @@ import { getClientIdApiPath } from "@/lib/get-api-endpoint";
 // --- Constants & Types ---
 export type Locale = "en" | "vi" | "zh" | "ko" | "ja";
 const LOCALES: Locale[] = ["en", "vi", "zh", "ko", "ja"];
-const BASE_URL = "https://soundcloud-downloader-pro.vercel.app";
+const BASE_URL = "https://universal-music-downloader.vercel.app";
 
 type Props = {
   params: Promise<{ lang: string }>;

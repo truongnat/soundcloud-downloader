@@ -15,7 +15,7 @@ export default function proxy(request: NextRequest) {
         const allowedOrigins = [
             "http://localhost:3000",
             "https://universal-music-downloader.vercel.app",
-            "https://soundcloud-downloader-pro.vercel.app",
+            "https://universal-music-downloader.vercel.app",
         ];
 
         const isAllowed = origin && allowedOrigins.includes(origin);

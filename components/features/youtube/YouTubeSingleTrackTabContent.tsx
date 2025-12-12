@@ -10,6 +10,7 @@ interface YouTubeSingleTrackTabContentProps {
     setIsLoading: (isLoading: boolean) => void;
     setError: (error: string | null) => void;
     isLoading: boolean;
+    dict?: { common?: { [key: string]: string } };
 }
 
 export function YouTubeSingleTrackTabContent({
@@ -17,7 +18,11 @@ export function YouTubeSingleTrackTabContent({
     setIsLoading,
     setError,
     isLoading,
+    dict,
 }: YouTubeSingleTrackTabContentProps) {
+    const t = (key: string) => {
+        return dict?.common?.[key] || key;
+    };
     const { setQueryParam, getQueryParam } = useUrlState();
     const [url, setUrl] = useState(() => getQueryParam("yt_video_url") || "");
 
@@ -27,7 +32,7 @@ export function YouTubeSingleTrackTabContent({
 
     const handleFetch = async () => {
         if (!url.trim()) {
-            toast.error("Vui lòng nhập URL video YouTube");
+            toast.error(t("enter_keyword"));
             return;
         }
 
@@ -58,12 +63,12 @@ export function YouTubeSingleTrackTabContent({
                 kind: "video"
             };
             setItems([item]);
-            toast.success("Đã tìm thấy video");
+            toast.success(t("results_found"));
 
         } catch (err: any) {
             console.error(err);
-            setError(err.message || "Lỗi khi lấy thông tin video");
-            toast.error("Lỗi khi lấy thông tin video");
+            setError(err.message || t("error"));
+            toast.error(t("error"));
         } finally {
             setIsLoading(false);
         }
@@ -78,8 +83,8 @@ export function YouTubeSingleTrackTabContent({
             onSubmit={handleFetch}
             disabled={isLoading}
             isLoading={isLoading}
-            buttonText="Lấy video"
-            loadingText="Đang tải..."
+            buttonText={t("search_btn")}
+            loadingText={t("searching")}
         />
     );
 }

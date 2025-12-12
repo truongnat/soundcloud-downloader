@@ -11,6 +11,7 @@ interface YouTubeSearchTabContentProps {
     isLoading: boolean;
     page?: number;
     onLoadMore?: () => void;
+    dict?: { common?: { [key: string]: string } };
 }
 
 export function YouTubeSearchTabContent({
@@ -19,7 +20,11 @@ export function YouTubeSearchTabContent({
     setError,
     isLoading,
     page = 1,
+    dict,
 }: YouTubeSearchTabContentProps) {
+    const t = (key: string) => {
+        return dict?.common?.[key] || key;
+    };
     const { setQueryParam, getQueryParam } = useUrlState();
     const [query, setQuery] = useState(() => getQueryParam("yt_q") || "");
     const currentSearch = useRef(query);
@@ -58,7 +63,7 @@ export function YouTubeSearchTabContent({
 
     const handleSearch = async (isLoadMore = false) => {
         if (!query.trim()) {
-            toast.error("Vui lòng nhập từ khóa tìm kiếm");
+            toast.error(t("enter_keyword"));
             return;
         }
 
@@ -113,7 +118,7 @@ export function YouTubeSearchTabContent({
             }));
 
             if (mappedItems.length === 0) {
-                if (!isLoadMore) toast.warning(`Không tìm thấy kết quả nào cho "${query}"`);
+                if (!isLoadMore) toast.warning(`${t("no_results_for")} "${query}"`);
             } else {
                 if (isLoadMore) {
                     setItems((prev) => {
@@ -123,14 +128,14 @@ export function YouTubeSearchTabContent({
                     });
                 } else {
                     setItems(mappedItems);
-                    toast.success(`Tìm thấy ${mappedItems.length} kết quả`);
+                    toast.success(`${t("results_found")}: ${mappedItems.length}`);
                 }
             }
 
         } catch (err: any) {
             console.error(err);
-            setError(err.message || "Lỗi khi tìm kiếm video");
-            toast.error("Lỗi khi tìm kiếm video");
+            setError(err.message || t("error"));
+            toast.error(t("error"));
         } finally {
             setIsLoading(false);
         }
@@ -138,15 +143,15 @@ export function YouTubeSearchTabContent({
 
     return (
         <ActionInputBar
-            label="Tìm kiếm trên YouTube:"
-            placeholder="Nhập tên video..."
+            label={t("search_btn") + " YouTube:"}
+            placeholder={t("search_placeholder")}
             value={query}
             onChange={setQuery}
             onSubmit={() => handleSearch(false)}
             disabled={isLoading}
             isLoading={isLoading}
-            buttonText="Tìm kiếm"
-            loadingText="Đang tìm..."
+            buttonText={t("search_btn")}
+            loadingText={t("searching")}
         />
     );
 }

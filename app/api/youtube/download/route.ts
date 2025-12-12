@@ -50,9 +50,11 @@ export async function GET(req: NextRequest) {
         }
 
 
+        const isPreview = req.nextUrl.searchParams.get("preview") === "true";
+
         // Return the stream
         const headers = new Headers();
-        headers.set("Content-Disposition", `attachment; filename="download.${format === 'mp3' ? 'mp3' : 'webm'}"`);
+        headers.set("Content-Disposition", `${isPreview ? 'inline' : 'attachment'}; filename="download.${format === 'mp3' ? 'mp3' : 'webm'}"`);
         headers.set("Content-Type", format === 'mp3' ? "audio/mpeg" : "audio/webm");
 
         // @ts-ignore - Next.js supports passing a Node.js stream or Web ReadableStream

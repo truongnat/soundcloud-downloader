@@ -56,6 +56,9 @@ interface Dictionary {
             playlist: string;
         }
     };
+    common: {
+        [key: string]: string;
+    };
 }
 
 export default function HomeClient({ dict }: { dict: Dictionary }) {
@@ -98,10 +101,10 @@ export default function HomeClient({ dict }: { dict: Dictionary }) {
                         transition={{ duration: 0.3 }}
                     >
                         <TabsContent value="soundcloud" className="mt-0">
-                            <SoundCloudDownloader dict={dict.soundcloud} />
+                            <SoundCloudDownloader dict={{ ...dict.soundcloud, common: dict.common }} />
                         </TabsContent>
                         <TabsContent value="youtube" className="mt-0">
-                            <YouTubeDownloader dict={dict.youtube} />
+                            <YouTubeDownloader dict={{ ...dict.youtube, common: dict.common }} />
                         </TabsContent>
                     </motion.div>
                 </Tabs>

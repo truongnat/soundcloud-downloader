@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
             allow: '/',
             disallow: '/api/',
         },
-        sitemap: 'https://soundcloud-downloader-pro.vercel.app/sitemap.xml',
+        sitemap: 'https://universal-music-downloader.vercel.app/sitemap.xml',
     }
 }
